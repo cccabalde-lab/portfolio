@@ -1,0 +1,47 @@
+body {
+  margin: 0;
+  background-color: #062446;
+}
+
+.buttons-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  padding: 20px 20px;
+  background: rgba(214, 214, 214, 0.08);
+  backdrop-filter: blur(10px);
+  border: none;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.buttons {
+  padding: 10px 16px;
+  font-size: 22px;
+  border: none;
+  background-color: transparent;
+  color: white;
+  font-family: monospace;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.buttons:hover {
+  color: #2e81ff;
+  text-shadow: 0 0 5px #000000,
+    0 0 10px #00bfff,
+    0 0 20px #00bfff;
+}
+
+.github-logo {
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  transition: 0.3s ease;
+  filter: brightness(0) invert(1);
+}
+
+.github-logo:hover {
+  filter: drop-shadow(0 0 5px #00bfff) drop-shadow(0 0 10px #00bfff) drop-shadow(0 0 20px #00bfff);
+  transform: scale(1.1);
+}
