@@ -1,43 +1,76 @@
 import { useState, useEffect } from 'react';
 
 const NAV_ITEMS = [
-  { label: 'about',      href: '#about' },
-  { label: 'projects',   href: '#projects' },
-  { label: 'experience', href: '#experience' },
-  { label: 'contact',    href: '#contact' },
+  { label: 'about',      href: '#about',      icon: '◈' },
+  { label: 'projects',   href: '#projects',   icon: '◉' },
+  { label: 'experience', href: '#experience', icon: '◆' },
+  { label: 'contact',    href: '#contact',    icon: '◎' },
 ];
 
 function Navbar() {
-  const [scrolled, setScrolled] = useState(false);
+  const [scrolled, setScrolled]         = useState(false);
   const [activeSection, setActiveSection] = useState('');
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const [prevScrollY, setPrevScrollY]   = useState(0);
+  const [navVisible, setNavVisible]     = useState(true);
 
   useEffect(() => {
     const onScroll = () => {
-      setScrolled(window.scrollY > 80);
+      const sy = window.scrollY;
+      const docH = document.documentElement.scrollHeight - window.innerHeight;
+      setScrollProgress(docH > 0 ? Math.min((sy / docH) * 100, 100) : 0);
 
-      // highlight active section
+      // Hide top navbar after 80px; show again if scrolling up
+      if (sy > 80) {
+        setScrolled(true);
+        setNavVisible(sy < prevScrollY); // show on scroll-up
+      } else {
+        setScrolled(false);
+        setNavVisible(true);
+      }
+      setPrevScrollY(sy);
+
+      // Determine active section
       const sections = NAV_ITEMS.map(n => n.href.slice(1));
       let current = '';
       for (const id of sections) {
         const el = document.getElementById(id);
-        if (el && el.getBoundingClientRect().top <= 120) current = id;
+        if (el && el.getBoundingClientRect().top <= 140) current = id;
       }
       setActiveSection(current);
     };
 
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
-  }, []);
+  }, [prevScrollY]);
 
   return (
     <>
-      {/* ── TOP NAVBAR ── */}
-      <nav className="navbar">
-        <div className="nav-spacer"></div>
+      {/* ── SCROLL PROGRESS BAR ── */}
+      <div
+        className="scroll-progress-bar"
+        style={{ width: `${scrollProgress}%` }}
+        aria-hidden="true"
+      />
+
+      {/* ── TOP NAVBAR — slides up & fades when scrolled down ── */}
+      <nav
+        className={[
+          'navbar',
+          scrolled  ? 'navbar--scrolled'  : '',
+          !navVisible ? 'navbar--hidden'  : '',
+        ].join(' ').trim()}
+      >
+        <div className="nav-spacer" />
         <ul className="nav-links">
           {NAV_ITEMS.map(({ label, href }) => (
             <li key={label}>
-              <a href={href}>{label}</a>
+              <a
+                href={href}
+                className={activeSection === href.slice(1) ? 'nav-link--active' : ''}
+              >
+                {label}
+              </a>
             </li>
           ))}
         </ul>
@@ -56,21 +89,37 @@ function Navbar() {
         </div>
       </nav>
 
-      {/* ── SCROLL SIDE NAV ── */}
-      <nav className={`side-nav${scrolled ? ' side-nav--visible' : ''}`} aria-label="Side navigation">
+      {/* ── RIGHT SIDE NAV — appears when top nav hides ── */}
+      <nav
+        className={`side-nav${scrolled ? ' side-nav--visible' : ''}`}
+        aria-label="Section navigation"
+      >
+        {/* mini scroll-progress arc inside the pill */}
+        <div
+          className="side-nav__progress"
+          style={{ '--progress': `${scrollProgress}%` }}
+          aria-hidden="true"
+        />
         <ul className="side-nav__list">
-          {NAV_ITEMS.map(({ label, href }) => {
+          {NAV_ITEMS.map(({ label, href, icon }, idx) => {
             const id = href.slice(1);
             const isActive = activeSection === id;
             return (
-              <li key={label} className="side-nav__item">
+              <li
+                key={label}
+                className="side-nav__item"
+                style={{ '--i': idx }}
+              >
                 <a
                   href={href}
                   className={`side-nav__link${isActive ? ' side-nav__link--active' : ''}`}
-                  aria-label={label}
+                  aria-label={`Navigate to ${label}`}
                 >
-                  <span className="side-nav__dot" />
-                  <span className="side-nav__label">{label}</span>
+                  <span className="side-nav__tooltip">{label}</span>
+                  <span className="side-nav__dot-wrap">
+                    <span className="side-nav__icon">{icon}</span>
+                    <span className="side-nav__dot" />
+                  </span>
                 </a>
               </li>
             );
